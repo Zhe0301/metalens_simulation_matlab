@@ -43,7 +43,7 @@ function plot_phase(L, varargin)
     c.Label.FontName = "Times New Roman";
 
 
-    exportgraphics(f,fullfile(save_path, 'Phase.png'),'Resolution',300)
+    print(f,fullfile(save_path, 'Phase.png'),'-dpng','-r300')
     if show
         waitfor(f)
     else

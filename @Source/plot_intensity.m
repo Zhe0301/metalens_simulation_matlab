@@ -23,6 +23,6 @@ function plot_intensity(S, varargin)
     c.Label.String = 'Intensity';
     c.Label.FontSize = 16;
     c.Label.FontName = "Times New Roman";
-    exportgraphics(f,fullfile(save_path, 'Intensity.png'),'Resolution',300)
+    print(f,fullfile(save_path, 'Intensity.png'),'-dpng','-r300');
     close(f);
 end

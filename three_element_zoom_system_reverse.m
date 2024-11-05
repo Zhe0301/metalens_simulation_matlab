@@ -1,19 +1,18 @@
-function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, d_lens, d_12, d_23, d_bfl, efl,varargin)
-    % 3片式变焦系统, 超透镜位于每片的后表面
-    % S: 光源对象
-    % L1, L2, L3: 三片镜片对象
-    % G: 网络对象
-    % d_lens, d_12, d_23, d_bfl: 镜片厚度 1，2片间距 2，3片间距 后截距
-    % efl 有效焦距，用于文件命名
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % 可选参数
-    %··refractive_index 镜片折射率
-    % save_path 文件储存目录
-    % magnification 图像放大倍率，为0或小于0时不放大,算y-z平面光场（sampling_point采样点数,interval焦点前后距离，单位mm，二者之一为0或小于0时不计算）
-    % sampling_point x-z截面计算的采样点数，为0时不计算
-    % interval x-z截面采样时焦点前后的距离，为0时不计算，单位mm
+function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, d_lens, d_12, d_23, d_bfl, name,refractive_index,varargin)
+% 3片式变焦系统, 超透镜位于每片的后表面
+% 参数:
+% S: 光源对象
+% L1, L2, L3: 三片镜片对象
+% G: 网络对象
+% d_lens, d_12, d_23, d_bfl: 镜片厚度 1，2片间距 2，3片间距 后截距
+% name 用于文件命名
+% refractive_index 镜片折射率
+% 可选参数:
+% save_path 文件储存目录
+% magnification 图像放大倍率，为0或小于0时不放大,算y-z平面光场（sampling_point采样点数,interval焦点前后距离，单位mm，二者之一为0或小于0时不计算）
+% sampling_point x-z截面计算的采样点数，为0时不计算
+% interval x-z截面采样时焦点前后的距离，为0时不计算，单位mm
     p = inputParser;    
-    addParameter(p,'refractive_index',1); 
     addParameter(p,'save_path','./');
     addParameter(p,'sampling_point',0);
     addParameter(p,'interval',0);
@@ -21,7 +20,6 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     addParameter(p,'show',false);
     addParameter(p,'gpu_acceleration',false);
     parse(p,varargin{:});       
-    refractive_index = p.Results.refractive_index;
     save_path = p.Results.save_path;
     method = p.Results.method;
     sampling_point = p.Results.sampling_point;
@@ -76,15 +74,15 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     c.Label.FontName = "Times New Roman";
     title('Image',FontSize=16,FontName="Times New Roman");
     xlabel('{\it{x}} (mm)',FontSize=16,FontName="Times New Roman");
-    ylabel('{\it{y}} (mm)',FontSize=16,FontName="Times New Roman");
+    ylabel('{\it{ y}} (mm)',FontSize=16,FontName="Times New Roman");
     
     subplot(2, 2, 2);
     plot(G.axis, I(mid_index_0, :)); 
     ax=gca;
     ax.FontSize=16;
     ax.FontName = "Times New Roman";
-    title('{\it{x}}-axis Cross Section',FontSize=16,FontName="Times New Roman");
-    xlabel('{\it{x}} (mm)',FontSize=16,FontName="Times New Roman");
+    title('{\it{ y}}-axis Cross Section',FontSize=16,FontName="Times New Roman");
+    xlabel('{\it{ y}} (mm)',FontSize=16,FontName="Times New Roman");
     ylabel('Intensity',FontSize=16,FontName="Times New Roman");
     grid on;
     
@@ -101,18 +99,18 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     c.Label.FontName = "Times New Roman";
     title('Image',FontSize=16,FontName="Times New Roman");
     xlabel('{\it{x}} (mm)',FontSize=16,FontName="Times New Roman");
-    ylabel('{\it{y}} (mm)',FontSize=16,FontName="Times New Roman");
+    ylabel('{\it{ y}} (mm)',FontSize=16,FontName="Times New Roman");
 
     subplot(2, 2, 4);
     plot(G.axis, log10(I(mid_index_0, :)));
     ax=gca;
     ax.FontSize=16;
     ax.FontName = "Times New Roman";
-    title('{\it{y}}-axis Cross Section'); 
-    xlabel('{\it{y}} (mm)',FontSize=16,FontName="Times New Roman");
+    title('{\it{ y}}-axis Cross Section'); 
+    xlabel('{\it{ y}} (mm)',FontSize=16,FontName="Times New Roman");
     ylabel('log10(Intensity)',FontSize=16,FontName="Times New Roman");
     grid on;
-    exportgraphics(f,fullfile(save_path,sprintf('image_f_%.1f.png', efl)),'Resolution',300)
+    print(f,fullfile(save_path,sprintf('image_f_%s.png', name)),'-dpng','-r300')
 
     if show
         waitfor(f)
@@ -162,7 +160,7 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     lgd.BackgroundAlpha = 0.6;
     xlabel('{\rho} ({\mu}m)',FontSize=16,FontName="Times New Roman");
     ylabel('Enclosed Energy Ratio',FontSize=16,FontName="Times New Roman");
-    exportgraphics(f,fullfile(save_path,sprintf('enclosed_energy_ratio_f_%.1f.png', efl)),'Resolution',300)
+    print(f,fullfile(save_path,sprintf('enclosed_energy_ratio_f_%s.png', name)),'-dpng','-r300')
     if show
         waitfor(f)
     else
@@ -185,7 +183,7 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     hold on;
     plot(G.axis_fft(numel(mtf_y)+1:end), mtf_y,'--','Color',"#FFA500",'LineWidth',2); %#FFA500橙色
     % 图例和标题
-    lgd = legend('{\it{x}}','{\it{y}}');
+    lgd = legend('{\it{x}}','{\it{ y}}');
     lgd.FontSize = 16;
     lgd.FontName = "Times New Roman";
     lgd.Location = 'northeast';
@@ -193,7 +191,7 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     lgd.BackgroundAlpha = 0.6;
     xlabel('Frequency (lp/mm)',FontSize=16,FontName="Times New Roman");
     ylabel('Modulation Transfer Function',FontSize=16,FontName="Times New Roman");
-    exportgraphics(f,fullfile(save_path,sprintf('MTF_f_%.1f.png', efl)),'Resolution',300)
+    print(f,fullfile(save_path,sprintf('MTF_f_%s.png', name)),'-dpng','-r300')
     if show
         waitfor(f)
     else
@@ -227,7 +225,7 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     c.Label.FontName = "Times New Roman";
     title('Interpolation Image',FontSize=16,FontName="Times New Roman");
     xlabel('{\it{x}} ({\mu}m)',FontSize=16,FontName="Times New Roman");
-    ylabel('{\it{y}} ({\mu}m)',FontSize=16,FontName="Times New Roman");
+    ylabel('{\it{ y}} ({\mu}m)',FontSize=16,FontName="Times New Roman");
     % y 截面
     subplot(1, 2, 2);
     plot(x_interp*1e3, I(mid_index_interp, :),'Color',"#4169E1",'LineWidth',2); 
@@ -235,12 +233,12 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
     ax.FontSize=16;
     ax.FontName = "Times New Roman";
     ax.XLim = [-10 10];
-    title('{\it{y}}-axis Cross Section',FontSize=16,FontName="Times New Roman");
-    xlabel('{\it{y}} ({\mu}m)',FontSize=16,FontName="Times New Roman");
+    title('{\it{ y}}-axis Cross Section',FontSize=16,FontName="Times New Roman");
+    xlabel('{\it{ y}} ({\mu}m)',FontSize=16,FontName="Times New Roman");
     ylabel('Intensity',FontSize=16,FontName="Times New Roman");
     grid on;
     
-    exportgraphics(f,fullfile(save_path,sprintf('image_interp_f_%.1f.png', efl)),'Resolution',300)
+    print(f,fullfile(save_path,sprintf('image_interp_f_%s.png', name)),'-dpng','-r300')
 
     if show
         waitfor(f)
@@ -291,19 +289,22 @@ function [e_5, e_6, e_yz] = three_element_zoom_system_reverse(S, L1, L2, L3, G, 
         c.Label.String = 'log10(Intensity)';
         c.Label.FontSize = 16;
         c.Label.FontName = "Times New Roman";
-        title('{\it{y}}-{\it{z}} Cross Section',FontSize=16,FontName="Times New Roman");
+        title('{\it{ y}}-{\it{z}} Cross Section',FontSize=16,FontName="Times New Roman");
         xlabel('{\it{z}} (mm)',FontSize=16,FontName="Times New Roman");
-        ylabel('{\it{y}} (mm)',FontSize=16,FontName="Times New Roman");
-        exportgraphics(f,fullfile(save_path,sprintf('y-z_cross_section_f_%.1f.png', efl)),'Resolution',300)
+        ylabel('{\it{ y}} (mm)',FontSize=16,FontName="Times New Roman");
+        print(f,fullfile(save_path,sprintf('y-z_cross_section_f_%s.png', name)), '-dpng','-r300');
         if show
             waitfor(f)
         else
             close(f);
         end
-
+        save(fullfile(save_path,sprintf('e_5_f_%s.mat', name)),'e_5',"-v7.3")
+        save(fullfile(save_path,sprintf('e_6_f_%s.mat', name)),'e_6',"-v7.3")
+        save(fullfile(save_path,sprintf('e_yz_f_%s.mat', name)),'e_yz',"-v7.3")
+        save(fullfile(save_path,sprintf('dist_array_e_yz_f_%s.mat', name)),'dist_array',"-v7.3")
+    else
+        save(fullfile(save_path,sprintf('e_5_f_%s.mat', name)),'e_5',"-v7.3")
+        save(fullfile(save_path,sprintf('e_6_f_%s.mat', name)),'e_6',"-v7.3")
     end
-
-       
-
 end
     

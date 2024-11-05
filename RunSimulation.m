@@ -53,13 +53,16 @@ L2.binary2_d(0.3, [3.157248960338e3, -2.062812665413e3, 1.207061495482e4, -6.173
 L3 = Lens(G);
 L3.binary2_d(1.2, [-1.845376080337e3, 6.935299381526e1, -7.928934283067, 1.711027879901], ...
     'm',1,'r_0',1, 'unit_phase', unit_phase, 'unit_t', unit_t, 'boundaries',boundaries);
-
 % 执行三元变焦系统
 d_lens = 0.75;
 method = 'BL-AS';
+axis = G.axis;
+save(fullfile(save_path,'axis.mat'),'axis',"-v7.3")
+clear axis
 for i = 1:length(efl)
     fprintf("EFFL = %.1f mm\n", efl(i));
-    three_element_zoom_system_reverse(s, L1, L2, L3, G, d_lens, d_12(i), d_23(i), d_bfl(i), efl(i), ...
-        'refractive_index',refractive_index, 'save_path',save_path,'sampling_point',50,'interval',1, ...
+    name = sprintf('%.1f',efl(i));
+    three_element_zoom_system_reverse(s, L1, L2, L3, G, d_lens, d_12(i), d_23(i), d_bfl(i), ...
+        name,refractive_index, 'save_path',save_path,'sampling_point',200,'interval',1, ...
         'method', method, 'show',true, 'gpu_acceleration',true);
 end
