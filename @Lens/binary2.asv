@@ -1,0 +1,29 @@
+function binary2(L, r_max, a, m, r_0, t)
+% 二元面2模拟: 使用径向坐标的偶次多项式描述相位面
+% 参考zemax二元面
+% r_max：最大半径,单位 mm;
+% a: 多项式系数数组;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 可选参数
+% m: 衍射阶数，默认值为1;
+% r_0: 归一化半径,单位 mm;
+% round_off: 是否使用相位四舍五入近似，默认为true
+% f_offset_wavelength: 额外的焦距补偿项，是补偿焦距和波长的乘积。补偿焦距是旋转角度为零时的焦距。为0时无补偿。默认为0
+% t: 能量透过率，默认为1
+    if nargin < 6
+        t = 1;
+    end
+    
+    mask_index = L.Grid.d2_r <= r_max;
+    L.mask = zeros(size(L.Grid.d2_r));
+    L.mask(mask_index) = 1;
+    L.phase = zeros(size(L.Grid.d2_r));
+    
+    for i = 1:length(a)
+        L.phase = L.phase + m * a(i) * (L.Grid.d2_r / r_0) .^ (2 * i);
+    end
+    
+    L.phase = L.phase .* L.mask;
+    L.amplitude = ones(size(L.Grid.d2_r)) .* L.mask;
+    L.complex_amplitude_t = L.amplitude .* exp(1i * L.phase) * t .* L.mask;
+end
